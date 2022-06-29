@@ -7,10 +7,10 @@ const path = require('path')
 const cookieParser = require('cookie-parser')
 
 const io = require("socket.io")(http, {
-	cors: {
-		origin: "*",
-		methods: [ "GET", "POST" ]
-	}
+   cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+   }
 });
 
 // Express App Config
@@ -37,9 +37,12 @@ app.get('/', (req, res) => {
 
 io.on("connection", (socket) => {
    console.log('connection');
-   
+   console.log('All connections', io.sockets.sockets.keys());
+
    socket.emit("me", socket.id);
+   
    socket.on("disconnect", () => {
+      console.log(`**** ${socket.id} was disconnect ****`);
       socket.broadcast.emit("callEnded")
    });
 
@@ -48,17 +51,23 @@ io.on("connection", (socket) => {
    });
 
    socket.on("answerCall", (data) => {
+      console.log('***********answerCall***********');
+      console.log('data.to', data.to);
       io.to(data.to).emit("callAccepted", data.signal)
    });
 
    socket.on("notifyImOnline", (data) => {
       console.log('user id: ', data.id);
-      socket.broadcast.emit("onlineUser", data)
+      socket.broadcast.emit("onlineUser", { data })
    });
 
    socket.on("sendUserName", (username) => {
       console.log('username: ', username);
-      socket.broadcast.emit("onlineUsername", username)
+      const sockets = [ ...io.sockets.sockets.keys()]
+      const filterdSockets = sockets.filter(soc => soc === socket.id)
+      console.log('socket id', socket.id);
+      console.log('filterdSockets', filterdSockets);
+      socket.broadcast.emit("onlineUsername", { username, id: filterdSockets },)
    });
 
 });
