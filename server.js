@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
 
    socket.on("notifyImOnline", (data) => {
       console.log('user id: ', data.id);
-      socket.emit("onlineUser", data)
+      socket.broadcast.emit("onlineUser", data)
    });
 
    socket.on("sendUserName", (username) => {
